@@ -1,22 +1,24 @@
 #!/usr/bin/env python
 
 import os
-import pickle
-
-from pyinotify import ProcessEvent
-from pyinotify import WatchManager
-from pyinotify import Notifier
-from pyinotify import IN_CLOSE_WRITE
 
 from Adafruit_GPIO import SPI
 from Adafruit_WS2801 import WS2801Pixels
 
-COLORMAP_NAME = 'color_map.json'
+from json import loads
+
+from pyinotify import IN_CLOSE_WRITE
+from pyinotify import Notifier
+from pyinotify import ProcessEvent
+from pyinotify import WatchManager
+
 DEBUG = True
 PIXEL_COUNT = 32
 SPI_DEVICE = 0
 SPI_PORT = 0
 
+def load_colormap():
+    json.loads('pygame_colormap.json')
 
 class EventHandler(ProcessEvent):
     def __init__(self, set_color):
@@ -41,9 +43,7 @@ class NAIKBled():
     led_map = {}
 
     def __init__(self, path_to_leddir):
-        with open(COLORMAP_NAME, 'r') as fh:
-            colormap = fh.read()
-        self.COLORMAP = pickle.loads(colormap) 
+        self.COLORMAP = load_colormap()
 
         for led in sorted(os.listdir(path_to_leddir)):
             with open(path_to_leddir + os.sep + led) as fh:
@@ -83,13 +83,16 @@ class NAIKBled():
         notifier.loop()
 
     def set_color(self, lednr, colorname1, dim1, *kwargs):
-        print(kwargs)
+        color1 = self.COLORMAP.get(colorname1)
 
-        color = self.COLORMAP.get(colorname1)
-        r = int(round((float(color[0]) / 100.0) * dim1))
-        g = int(round((float(color[2]) / 100.0) * dim1))
-        b = int(round((float(color[1]) / 100.0) * dim1))
-
+        if color1:
+            r = int(round((float(color[0]) / 100.0) * dim1))
+            g = int(round((float(color[2]) / 100.0) * dim1))
+            b = int(round((float(color[1]) / 100.0) * dim1))
+        else:
+            msg = 'Invalid colorname: "%s" for led: %i' % (colorname1, lednr)
+            print(msg)
+            return
         if DEBUG:
             print('Setting led: %i to %s (%i, %i, %i)' % (
 		lednr, colorname1, r, g, b))
@@ -99,12 +102,13 @@ class NAIKBled():
         self.pixels.show()
 
 def main(path_to_leddir):
-    #import random
     naikbled = NAIKBled(path_to_leddir)
 
     #color = random.choice(naikbled.COLORMAP.keys())
     #print(color, naikbled.COLORMAP.get(color)[:-1])
 
+def test():
+    pass
 
 if __name__ == '__main__':
     main('/led/')
