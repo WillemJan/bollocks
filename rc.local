@@ -1,0 +1,5 @@
+/home/pi/bollocks/mkled
+/usr/bin/screen -d -m -S led /home/pi/bollocks/bollocks.sh
+/usr/bin/screen -d -m -S icinga /home/pi/bollocks/statusscripts/icinga.sh
+/usr/bin/screen -d -m -S icinga /home/pi/bollocks/statusscripts/network.sh
+/usr/bin/screen -d -m -S icinga /home/pi/bollocks/statusscripts/kit.sh

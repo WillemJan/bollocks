@@ -17,10 +17,14 @@ PIXEL_COUNT = 32
 SPI_DEVICE = 0
 SPI_PORT = 0
 
-def load_colormap():
-    json.loads('pygame_colormap.json')
+
+def load_colormap()
+    dir_path = os.path.dirname(os.path.realpath(__file__))
+    json.loads(os.join(dir_path, 'pygame_colormap.json'))
+
 
 class EventHandler(ProcessEvent):
+
     def __init__(self, set_color):
         ProcessEvent.__init__(self)
         self.set_color = set_color
@@ -38,6 +42,7 @@ class EventHandler(ProcessEvent):
                        colorname1,
                        dim1)
 
+
 class NAIKBled():
     COLORMAP = {}
     led_map = {}
@@ -53,17 +58,17 @@ class NAIKBled():
                 if line.count(',') > 1:
                     step = 0
 
-                self.led_map[led] = {'wanted' : [fh.readline().strip()],
-                                     'r' : 0, # current r
-                                     'g' : 0, # current g
-                                     'b' : 0, # current b
-                                     'step' : step, # current step
-                                      }
+                self.led_map[led] = {'wanted': [fh.readline().strip()],
+                                     'r': 0,  # current r
+                                     'g': 0,  # current g
+                                     'b': 0,  # current b
+                                     'step': step,  # current step
+                                     }
 
         self.path_to_leddir = path_to_leddir
 
         self.pixels = WS2801Pixels(
-                        PIXEL_COUNT,
+            PIXEL_COUNT,
                         spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
 
         self.pixels.clear()
@@ -76,7 +81,7 @@ class NAIKBled():
         notifier = Notifier(wm, handler)
 
         wdd = wm.add_watch(
-                    self.path_to_leddir,
+            self.path_to_leddir,
                     IN_CLOSE_WRITE,
                     rec=True)
 
@@ -95,17 +100,19 @@ class NAIKBled():
             return
         if DEBUG:
             print('Setting led: %i to %s (%i, %i, %i)' % (
-		lednr, colorname1, r, g, b))
+                lednr, colorname1, r, g, b))
 
         self.pixels.set_pixel_rgb(lednr,
                                   r, g, b)
         self.pixels.show()
 
+
 def main(path_to_leddir):
     naikbled = NAIKBled(path_to_leddir)
 
-    #color = random.choice(naikbled.COLORMAP.keys())
-    #print(color, naikbled.COLORMAP.get(color)[:-1])
+    # color = random.choice(naikbled.COLORMAP.keys())
+    # print(color, naikbled.COLORMAP.get(color)[:-1])
+
 
 def test():
     pass
