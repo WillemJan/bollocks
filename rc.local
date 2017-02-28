@@ -1,5 +1,9 @@
+#Add this to your /etc/rc.local
+#This makes the led files with userrights
 /home/pi/bollocks/mkled
+#Main bollocks python script started in a screen
 /usr/bin/screen -d -m -S led /home/pi/bollocks/bollocks.sh
+#Screens below are started with scripts for ledchanges (mode file selects them)
 /usr/bin/screen -d -m -S icinga /home/pi/bollocks/statusscripts/icinga.sh
-/usr/bin/screen -d -m -S icinga /home/pi/bollocks/statusscripts/network.sh
-/usr/bin/screen -d -m -S icinga /home/pi/bollocks/statusscripts/kit.sh
+/usr/bin/screen -d -m -S network /home/pi/bollocks/statusscripts/network.sh
+/usr/bin/screen -d -m -S kit /home/pi/bollocks/statusscripts/kit.sh
