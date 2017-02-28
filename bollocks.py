@@ -43,7 +43,7 @@ class EventHandler(ProcessEvent):
                        dim1)
 
 
-class NAIKBled():
+class Bollocks():
     COLORMAP = {}
     led_map = {}
 
@@ -108,10 +108,7 @@ class NAIKBled():
 
 
 def main(path_to_leddir):
-    naikbled = NAIKBled(path_to_leddir)
-
-    # color = random.choice(naikbled.COLORMAP.keys())
-    # print(color, naikbled.COLORMAP.get(color)[:-1])
+    bollocks = Bollocks(path_to_leddir)
 
 
 def test():
