@@ -6,8 +6,8 @@ TODO:
 
 AUTHORS:
     
-    Henri Aanstoot (http://www.fash.nu/)
-    Willem Jan Faber (http://www.fe2.nl/)
+    Henri Aanstoot (http://github.com/fashice/)
+    Willem Jan Faber (http://github.com/willemjan/)
 
     Tnx fly out to our current employers:
         
@@ -16,5 +16,6 @@ AUTHORS:
 
 DEPENDENCIES:
     - Adafruit's WS2801 library.
+    - Adafruit's GPIO library.
     - python-pyinotify
-    - python-pyinotify-doc
+    - json
