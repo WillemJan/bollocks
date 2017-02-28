@@ -12,9 +12,9 @@ from pyinotify import Notifier
 from pyinotify import ProcessEvent
 from pyinotify import WatchManager
 
+
 DEBUG = True
 PIXEL_COUNT = 32
-RUN = True
 SPI_DEVICE = 0
 SPI_PORT = 0
 
@@ -75,8 +75,8 @@ class Bollocks():
         self.pixels.clear()
         self.pixels.show()
 
-        if RUN:
-            self.watch_dir()
+        print("Starting bollocks v1")
+        self.watch_dir()
 
     def watch_dir(self):
         wm = WatchManager()
@@ -115,17 +115,16 @@ def main(path_to_leddir):
 
 
 def test():
-    import doctest
-    doctest.testmod()
     """
     >>> path_to_leddir = '/led/'
     >>> RUN=False
     >>> bollocks = Bollocks(path_to_leddir)
     >>> print(bollocks.COLORMAP.get('cyan2'))
-    
+    [0, 238, 238, 255]
     """
     
 
 if __name__ == '__main__':
-    test()
+    import doctest
+    doctest.testmod()
     main('/led/')
