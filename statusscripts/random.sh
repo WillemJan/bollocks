@@ -1,5 +1,6 @@
 #!/bin/bash
 #sets random lichts when mode is 2
+#TODO .. number of leds from config file
 modepath=/home/pi/naikbled/statusscripts/mode
 while true; do
 if [[ "$(cat $modepath)" == "2" ]] ; then
