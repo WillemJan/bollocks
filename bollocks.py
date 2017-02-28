@@ -121,7 +121,7 @@ def test():
     >>> path_to_leddir = '/led/'
     >>> RUN=False
     >>> bollocks = Bollocks(path_to_leddir)
-    >>> print(bollocks.get('cyan2'))
+    >>> print(bollocks.COLORMAP.get('cyan2'))
     
     """
     
