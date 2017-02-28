@@ -5,7 +5,7 @@ import os
 from Adafruit_GPIO import SPI
 from Adafruit_WS2801 import WS2801Pixels
 
-from simplejson import loads
+from simplejson import load
 
 from pyinotify import IN_CLOSE_WRITE
 from pyinotify import Notifier
@@ -20,7 +20,8 @@ SPI_PORT = 0
 
 def load_colormap():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    loads(os.path.join(dir_path, 'pygame_colormap.json'))
+    with open(os.path.join(dir_path, 'pygame_colormap.json'), 'r') as fh:
+        return(load(fh))
 
 
 class EventHandler(ProcessEvent):
