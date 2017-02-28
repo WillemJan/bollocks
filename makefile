@@ -1,2 +1,2 @@
 test:
-      python2.7 setup.py install
+	python setup.py install
