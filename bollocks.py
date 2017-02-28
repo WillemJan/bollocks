@@ -20,7 +20,7 @@ SPI_PORT = 0
 
 def load_colormap():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    json.loads(os.join(dir_path, 'pygame_colormap.json'))
+    loads(os.join(dir_path, 'pygame_colormap.json'))
 
 
 class EventHandler(ProcessEvent):
