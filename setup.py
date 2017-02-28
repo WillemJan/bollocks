@@ -21,7 +21,7 @@ entry_point = ("""
 
 required = ['adafruit-gpio',
             'adafruit-ws2801',
-            'json',
+            'simplejson',
             'pyinotify',
             '']
 setup(
