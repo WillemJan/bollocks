@@ -9,10 +9,6 @@ try:
 except ImportError:
     from distutils.core import setup
 
-if sys.argv[-1] == 'test':
-    os.system('python test_requests.py')
-    sys.exit()
-
 entry_point = ("""
         [console_scripts]
         noise=Fe2.tools.alsa:noise
