@@ -115,14 +115,17 @@ def main(path_to_leddir):
 
 
 def test():
+    import doctest
+    doctest.testmod()
     """
+    >>> path_to_leddir = '/led/'
+    >>> RUN=False
     >>> bollocks = Bollocks(path_to_leddir)
     >>> print(bollocks.get('cyan2'))
     
-
     """
     
 
 if __name__ == '__main__':
-    test('/led/')
+    test()
     main('/led/')
