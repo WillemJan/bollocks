@@ -5,3 +5,4 @@ test:
 	sudo mount /run/shm /led -o bind
 	. example/blink.sh
 	. example/fade.sh
+	sudo python bollocks.py
