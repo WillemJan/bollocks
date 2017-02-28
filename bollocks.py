@@ -14,9 +14,9 @@ from pyinotify import WatchManager
 
 DEBUG = True
 PIXEL_COUNT = 32
+RUN = True
 SPI_DEVICE = 0
 SPI_PORT = 0
-
 
 def load_colormap():
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -74,7 +74,9 @@ class Bollocks():
 
         self.pixels.clear()
         self.pixels.show()
-        self.watch_dir()
+
+        if RUN:
+            self.watch_dir()
 
     def watch_dir(self):
         wm = WatchManager()
@@ -113,7 +115,14 @@ def main(path_to_leddir):
 
 
 def test():
-    pass
+    """
+    >>> bollocks = Bollocks(path_to_leddir)
+    >>> print(bollocks.get('cyan2'))
+    
+
+    """
+    
 
 if __name__ == '__main__':
+    test('/led/')
     main('/led/')
