@@ -10,7 +10,7 @@ CHROOT_ARCH=armhf
 HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild"
 
 # Debian package dependencies for the chrooted environment
-GUEST_DEPENDENCIES="build-essential git m4 sudo python"
+GUEST_DEPENDENCIES="build-essential git m4 sudo python python-flake8"
 
 # Command used to run the tests
 TEST_COMMAND="make travis-test"
@@ -18,7 +18,6 @@ TEST_COMMAND="make travis-test"
 function setup_arm_chroot {
     # Host dependencies
     sudo apt-get install -qq -y ${HOST_DEPENDENCIES}
-    sudo apt-get install -qq -y flake8
 
     # Create chrooted environment
     sudo mkdir ${CHROOT_DIR}
