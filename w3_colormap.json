@@ -1,5 +1,4 @@
-{
-    "aliceblue            ","#f0f8ff", "240,248,255",
+[    "aliceblue            ","#f0f8ff", "240,248,255",
     "antiquewhite         ","#faebd7", "250,235,215",
     "aqua                 ","#00ffff", "0,255,255",
     "aquamarine           ","#7fffd4", "127,255,212",
@@ -146,5 +145,4 @@
     "whitesmoke           ","#f5f5f5", "245,245,245",
     "yellow               ","#ffff00", "255,255,0",
     "yellowgreen          ","#9acd32", "154,205,50"
-}
-
+]

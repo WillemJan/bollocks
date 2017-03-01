@@ -1,6 +1,9 @@
 #!/usr/bin/env python2.7
 
 import os
+import sys
+
+import argparse
 
 from Adafruit_GPIO import SPI
 from Adafruit_WS2801 import WS2801Pixels
@@ -17,6 +20,7 @@ DEBUG = True
 PIXEL_COUNT = 32
 SPI_DEVICE = 0
 SPI_PORT = 0
+
 
 def load_colormap():
     dir_path = os.path.dirname(os.path.realpath(__file__))
@@ -44,13 +48,14 @@ class EventHandler(ProcessEvent):
                        dim1)
 
 
-class Bollocks():
+class Bollocks(object):
     COLORMAP = {}
     led_map = {}
 
-    def __init__(self, path_to_leddir):
+    def __init__(self):
         self.COLORMAP = load_colormap()
 
+    def run(self, path_to_leddir):
         for led in sorted(os.listdir(path_to_leddir)):
             with open(path_to_leddir + os.sep + led) as fh:
                 line = fh.readline().strip()
@@ -68,9 +73,15 @@ class Bollocks():
 
         self.path_to_leddir = path_to_leddir
 
-        self.pixels = WS2801Pixels(
-            PIXEL_COUNT,
-                        spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+        try:
+            self.pixels = WS2801Pixels(PIXEL_COUNT,
+                                       spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+        except Exception as e:
+            msg = 'Bollocks: '
+            msg += 'Unable to open SPI port: %i, device: %i\n' % (
+                    SPI_PORT, SPI_DEVICE)
+            sys.stderr.write(msg)
+            sys.exit(-1)
 
         self.pixels.clear()
         self.pixels.show()
@@ -83,20 +94,16 @@ class Bollocks():
         handler = EventHandler(self.set_color)
         notifier = Notifier(wm, handler)
 
-        wdd = wm.add_watch(
-            self.path_to_leddir,
-                    IN_CLOSE_WRITE,
-                    rec=True)
-
+        wm.add_watch(self.path_to_leddir, IN_CLOSE_WRITE, rec=True)
         notifier.loop()
 
     def set_color(self, lednr, colorname1, dim1, *kwargs):
         color1 = self.COLORMAP.get(colorname1)
 
         if color1:
-            r = int(round((float(color[0]) / 100.0) * dim1))
-            g = int(round((float(color[2]) / 100.0) * dim1))
-            b = int(round((float(color[1]) / 100.0) * dim1))
+            r = int(round((float(color1[0]) / 100.0) * dim1))
+            g = int(round((float(color1[2]) / 100.0) * dim1))
+            b = int(round((float(color1[1]) / 100.0) * dim1))
         else:
             msg = 'Invalid colorname: "%s" for led: %i' % (colorname1, lednr)
             print(msg)
@@ -111,20 +118,40 @@ class Bollocks():
 
 
 def main(path_to_leddir):
-    bollocks = Bollocks(path_to_leddir)
+    bollocks = Bollocks()
+    bollocks.run(path_to_leddir)
 
 
 def test():
     """
     >>> path_to_leddir = '/led/'
-    >>> RUN=False
-    >>> bollocks = Bollocks(path_to_leddir)
+    >>> bollocks = Bollocks()
     >>> print(bollocks.COLORMAP.get('cyan2'))
     [0, 238, 238, 255]
     """
-    
+    import doctest
+    doctest.testmod(verbose=True)
+
 
 if __name__ == '__main__':
-    import doctest
-    doctest.testmod()
-    main('/led/')
+    parser = argparse.ArgumentParser(description='Bollocks book leds rock!')
+    parser.add_argument('--path',
+                        default='/led/',
+                        type=str,
+                        help='Path to SHM directory')
+    parser.add_argument('--test',
+                        action="store_true",
+                        help='Run self test')
+
+    args = parser.parse_args()
+
+    if args.test:
+        test()
+    else:
+        if os.path.isdir(args.path):
+            main(args.path)
+        else:
+            msg = 'Bollocks: '
+            msg += 'Could not open SHM: %s' % args.path
+            sys.stderr.write(str(msg) + '\n')
+            sys.exit(-1)

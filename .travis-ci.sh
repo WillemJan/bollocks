@@ -13,11 +13,12 @@ HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild"
 GUEST_DEPENDENCIES="build-essential git m4 sudo python"
 
 # Command used to run the tests
-TEST_COMMAND="make test"
+TEST_COMMAND="make travis-test"
 
 function setup_arm_chroot {
     # Host dependencies
     sudo apt-get install -qq -y ${HOST_DEPENDENCIES}
+    sudo apt-get install -qq -y flake8
 
     # Create chrooted environment
     sudo mkdir ${CHROOT_DIR}
