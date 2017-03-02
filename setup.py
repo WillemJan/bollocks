@@ -19,6 +19,7 @@ required = ['adafruit-gpio',
             'adafruit-ws2801',
             'simplejson',
             'pyinotify',
+            'pep8',
             '']
 setup(
     name='bollocks',
