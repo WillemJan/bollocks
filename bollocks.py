@@ -24,12 +24,10 @@ SPI_PORT = 0
 
 def load_colormap():
     dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, 'pygame_colormap.json'), 'r') as fh:
+    with open(os.path.join(dir_path, 'colormap.json'), 'r') as fh:
         return(load(fh))
 
-
 class EventHandler(ProcessEvent):
-
     def __init__(self, set_color):
         ProcessEvent.__init__(self)
         self.set_color = set_color
@@ -64,18 +62,21 @@ class Bollocks(object):
                 if line.count(',') > 1:
                     step = 0
 
-                self.led_map[led] = {'wanted': [fh.readline().strip()],
-                                     'r': 0,  # current r
-                                     'g': 0,  # current g
-                                     'b': 0,  # current b
-                                     'step': step,  # current step
-                                     }
+                self.led_map[led] = {
+                    'wanted': [fh.readline().strip()],
+                    'r': 0,  # current r
+                    'g': 0,  # current g
+                    'b': 0,  # current b
+                    'step': step,  # current step
+                }
 
         self.path_to_leddir = path_to_leddir
 
         try:
             self.pixels = WS2801Pixels(PIXEL_COUNT,
-                                       spi=SPI.SpiDev(SPI_PORT, SPI_DEVICE))
+                                       spi=SPI.SpiDev(
+                                       SPI_PORT,
+                                       SPI_DEVICE))
         except Exception as e:
             msg = 'Bollocks: '
             msg += 'Unable to open SPI port: %i, device: %i\n' % (
@@ -94,7 +95,10 @@ class Bollocks(object):
         handler = EventHandler(self.set_color)
         notifier = Notifier(wm, handler)
 
-        wm.add_watch(self.path_to_leddir, IN_CLOSE_WRITE, rec=True)
+        wm.add_watch(self.path_to_leddir, 
+                     IN_CLOSE_WRITE,
+                     rec=True)
+
         notifier.loop()
 
     def set_color(self, lednr, colorname1, dim1, *kwargs):
@@ -127,7 +131,7 @@ def test():
     >>> path_to_leddir = '/led/'
     >>> bollocks = Bollocks()
     >>> print(bollocks.COLORMAP.get('cyan2'))
-    [0, 238, 238, 255]
+    [0, 238, 238]
     """
     import doctest
     doctest.testmod(verbose=True)
@@ -135,6 +139,10 @@ def test():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bollocks book leds rock!')
+    parser.add_argument('--leds',
+                        default=32,
+                        type=int,
+                        help='Number of led\'s on strip')
     parser.add_argument('--path',
                         default='/led/',
                         type=str,
@@ -142,7 +150,6 @@ if __name__ == '__main__':
     parser.add_argument('--test',
                         action="store_true",
                         help='Run self test')
-
     args = parser.parse_args()
 
     if args.test:
