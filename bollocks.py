@@ -27,6 +27,7 @@ def load_colormap():
     with open(os.path.join(dir_path, 'colormap.json'), 'r') as fh:
         return(load(fh))
 
+
 class EventHandler(ProcessEvent):
     def __init__(self, set_color):
         ProcessEvent.__init__(self)
@@ -73,10 +74,11 @@ class Bollocks(object):
         self.path_to_leddir = path_to_leddir
 
         try:
-            self.pixels = WS2801Pixels(PIXEL_COUNT,
-                                       spi=SPI.SpiDev(
-                                       SPI_PORT,
-                                       SPI_DEVICE))
+            self.pixels = WS2801Pixels(
+                    PIXEL_COUNT,
+                    spi=SPI.SpiDev(
+                        SPI_PORT, SPI_DEVICE))
+
         except Exception as e:
             msg = 'Bollocks: '
             msg += 'Unable to open SPI port: %i, device: %i\n' % (
@@ -95,7 +97,7 @@ class Bollocks(object):
         handler = EventHandler(self.set_color)
         notifier = Notifier(wm, handler)
 
-        wm.add_watch(self.path_to_leddir, 
+        wm.add_watch(self.path_to_leddir,
                      IN_CLOSE_WRITE,
                      rec=True)
 
@@ -131,7 +133,7 @@ def test():
     >>> path_to_leddir = '/led/'
     >>> bollocks = Bollocks()
     >>> print(bollocks.COLORMAP.get('cyan2'))
-    [0, 238, 238]
+    {'rgb': '0,238,238', 'hex': '#00eeee'}
     """
     import doctest
     doctest.testmod(verbose=True)
