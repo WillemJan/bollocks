@@ -89,7 +89,8 @@ class Bollocks(object):
         self.pixels.clear()
         self.pixels.show()
 
-        print("Starting bollocks v1")
+        msg = 'Bollocks: '
+        msg += 'Starting bollocks v1'
         self.watch_dir()
 
     def watch_dir(self):
@@ -104,7 +105,7 @@ class Bollocks(object):
         notifier.loop()
 
     def set_color(self, lednr, colorname1, dim1, *kwargs):
-        color1 = self.COLORMAP.get(colorname1)
+        color1 = self.COLORMAP.get(colorname1).get('rgb')
 
         if color1:
             r = int(round((float(color1[0]) / 100.0) * dim1))
