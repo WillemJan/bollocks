@@ -1,3 +1,3 @@
-0 18 * * * echo x > /home/pi/bollocks/statusscripts/mode # geen leds doen nar 18uur
+0 18 * * * echo x > /home/pi/bollocks/statusscripts/mode # geen leds doen na 18uur
 1 18 * * * /home/pi/bollocks/statusscripts/clear.sh # blank leds 
 0 7 * * 1,2,3,4,5 echo 1 > /home/pi/bollocks/statusscripts/mode # script 1 mag schrijven naar leds
