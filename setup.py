@@ -11,15 +11,13 @@ except ImportError:
 
 entry_point = ("""
         [console_scripts]
-        noise=Fe2.tools.alsa:noise
-        mute=Fe2.tools.alsa:mute
+        bollocks=bollocks:main
 """)
 
 required = ['adafruit-gpio',
             'adafruit-ws2801',
             'simplejson',
             'pyinotify',
-            'pep8',
             '']
 setup(
     name='bollocks',
