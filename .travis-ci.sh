@@ -7,10 +7,10 @@ VERSION=wheezy
 CHROOT_ARCH=armhf
 
 # Debian package dependencies for the host
-HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild python-virtualenv pep8"
+HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild"
 
 # Debian package dependencies for the chrooted environment
-GUEST_DEPENDENCIES="build-essential git m4 sudo python python-virtualenv pep8"
+GUEST_DEPENDENCIES="build-essential git m4 sudo python"
 
 # Command used to run the tests
 TEST_COMMAND="make test"
@@ -24,11 +24,6 @@ function setup_arm_chroot {
     sudo debootstrap --foreign --no-check-gpg --include=fakeroot,build-essential \
         --arch=${CHROOT_ARCH} ${VERSION} ${CHROOT_DIR} ${MIRROR}
     sudo cp /usr/bin/qemu-arm-static ${CHROOT_DIR}/usr/bin/
-
-    # PEP8 && virtualenv
-    sudo cp /usr/bin/pep8 ${CHROOT_DIR}/usr/bin/
-    sudo cp /usr/bin/virtualenv ${CHROOT_DIR}/usr/bin/
-
     sudo chroot ${CHROOT_DIR} ./debootstrap/debootstrap --second-stage
     sudo sbuild-createchroot --arch=${CHROOT_ARCH} --foreign --setup-only \
         ${VERSION} ${CHROOT_DIR} ${MIRROR}
@@ -70,5 +65,6 @@ fi
 
 echo "Running tests"
 echo "Environment: $(uname -a)"
+sudo apt-get --allow-unauthenticated install -qq -y python-virtualenv pep8
 
 ${TEST_COMMAND}
