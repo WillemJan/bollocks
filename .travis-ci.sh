@@ -13,7 +13,7 @@ HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild"
 GUEST_DEPENDENCIES="build-essential git m4 sudo python python-virtualenv pep8"
 
 # Command used to run the tests
-TEST_COMMAND="make travis-test"
+TEST_COMMAND="make test"
 
 function setup_arm_chroot {
     # Host dependencies

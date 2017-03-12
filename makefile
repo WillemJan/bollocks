@@ -4,8 +4,6 @@ test:
 	/usr/bin/pep8 bollocks.py; \
 	python setup.py install; \
 	python bollocks.py --test
-travis-test:
-	make test
 clean:
 	rm -rf env dist build
 	rm -rf bollocks.egg-info
