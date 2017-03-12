@@ -7,8 +7,8 @@ VERSION=wheezy
 CHROOT_ARCH=armhf
 
 # Debian package dependencies for the host
-HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild python-virtualenv pep8 "
--
+HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild python-virtualenv pep8"
+
 # Debian package dependencies for the chrooted environment
 GUEST_DEPENDENCIES="build-essential git m4 sudo python python-virtualenv pep8"
 
