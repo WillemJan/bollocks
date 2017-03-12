@@ -5,9 +5,7 @@ test:
 	python setup.py install; \
 	python bollocks.py --test
 travis-test:
-	sudo python setup.py install
-	/usr/local/bin/pep8 bollocks.py
-	python bollocks.py --test
+	make test
 clean:
-	rm -rf env
+	rm -rf env dist build
 	rm -rf bollocks.egg-info
