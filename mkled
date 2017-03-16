@@ -1,5 +1,5 @@
 #!/bin/bash
-source leds.conf
+source ~/bollocks/leds.conf
 
 for f in $(seq -w 000 $numleds) ; do
 echo "black,1" > /led/led$f
