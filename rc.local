@@ -8,3 +8,5 @@
 /usr/bin/screen -d -m -S network /home/pi/bollocks/statusscripts/network.sh
 /usr/bin/screen -d -m -S kit /home/pi/bollocks/statusscripts/kit.sh
 /usr/bin/screen -d -m -S random /home/pi/bollocks/statusscripts/random.sh
+/usr/bin/screen -d -m -S bigdemo /home/pi/bollocks/statusscripts/bigdemo.sh
+/usr/bin/screen -d -m -S rainbow /home/pi/bollocks/statusscripts/rainbow.sh
