@@ -20,8 +20,6 @@ from pyinotify import WatchManager
 
 
 DEBUG = True
-SPI_DEVICE = 0
-SPI_PORT = 0
 
 
 class EventHandler(ProcessEvent):
@@ -46,11 +44,17 @@ class EventHandler(ProcessEvent):
 class Bollocks(object):
     COLORMAP = {}
     NUM_LEDS = 32
+    SPI_DEVICE = 0
+    SPI_PORT = 0
+
     led_map = {}
 
     def __init__(self):
-        self.NUM_LEDS = self.load_config().get('NUM_LEDS')
         self.COLORMAP = self.load_colormap()
+        config = self.load_config()
+        self.NUM_LEDS = config.get('NUM_LEDS')
+        self.SPI_DEVICE = config.get('SPI_DEVICE')
+        self.SPI_PORT = config.get('SPI_PORT')
 
     def run(self, path_to_leddir):
         for led in sorted(os.listdir(path_to_leddir)):
@@ -75,12 +79,12 @@ class Bollocks(object):
             self.pixels = WS2801Pixels(
                     self.NUM_LEDS,
                     spi=SPI.SpiDev(
-                        SPI_PORT, SPI_DEVICE))
+                        self.SPI_PORT, self.SPI_DEVICE))
 
         except Exception as e:
             msg = 'Bollocks: '
             msg += 'Unable to open SPI port: %i, device: %i\n' % (
-                    SPI_PORT, SPI_DEVICE)
+                    self.SPI_PORT, self.SPI_DEVICE)
             sys.stderr.write(msg)
             sys.exit(-1)
 
@@ -142,10 +146,13 @@ class Bollocks(object):
             sys.exit(-1)
 
         numleds = config.getint('bollocks', 'numleds')
+        spidevice = config.getint('bollocks', 'spidevice')
+        spiport = config.getint('bollocks', 'spiport')
 
-        return dict({"NUM_LEDS": numleds})
-        
-
+        return dict(
+                {"NUM_LEDS": numleds,
+                 "SPI_PORT": spiport,
+                 "SPI_DEVICE": spidevice})
 
     @staticmethod
     def load_colormap():
@@ -165,6 +172,12 @@ def test():
     >>> bollocks = Bollocks()
     >>> print(bollocks.COLORMAP.get('cyan2'))
     {'rgb': '0,238,238', 'hex': '#00eeee'}
+    >>> print(bollocks.SPI_DEVICE)
+    0
+    >>> print(bollocks.SPI_PORT)
+    0
+    >>> print(bollocks.NUM_LEDS)
+    159
     """
     import doctest
     doctest.testmod(verbose=True)
