@@ -1,0 +1,44 @@
+#!/bin/bash
+echo "Main script"
+ps -ef | grep -v grep | grep naikbled.py >/dev/null
+if [ $? -eq 0 ] ; then
+        echo "[OK] led engine" 
+else
+        echo "[NOK] led engine" 
+fi
+echo 
+echo "Led scrips"
+cat /etc/rc.local | grep screen | grep -v naikbled.sh | rev | cut -f1 -d/ | rev | while read ; do 
+        ps -ef | grep -v grep | grep SCREEN | grep $REPLY >/dev/null
+        if [ $? -eq 0 ] ; then
+                echo "[OK] $REPLY engine" 
+        else
+                echo "[NOK] $REPLY engine" 
+        fi
+
+done
+echo
+mode=$(cat /home/pi/naikbled/statusscripts/mode)
+echo "Mode is $mode"
+echo -n "Mode script running : "
+grep modepath /home/pi/naikbled/statusscripts/*  | grep $mode | cut -f1 -d: | rev | cut -f1 -d/ | rev
+echo
+echo "Pid's found : "
+ls /home/pi/naikbled/statusscripts/*pid 2>/dev/null
+echo
+echo "
+select the operation
+************
+1)remove pids
+2)start missing engines
+3)operation 3 
+4)operation 4 "
+
+read n
+case $n in
+    1) rm /home/pi/naikbled/statusscripts/*pid 2>/dev/null ;;
+    2) cat /etc/rc.local | grep screen | grep -v naikbled.sh | rev | cut -f1 -d/ | rev | while read ; do  ps -ef | grep -v grep | grep SCREEN | grep $REPLY >/dev/null || (cat /etc/rc.local | grep $REPLY | bash) ; done ;;
+    3) commands for opn 3;;
+    4) commands for  opn 4;;
+    *) invalid option;;
+esac
