@@ -3,14 +3,14 @@
 
 CHROOT_DIR=/tmp/arm-chroot
 MIRROR=http://archive.raspbian.org/raspbian
-VERSION=wheezy
+VERSION=stretch
 CHROOT_ARCH=armhf
 
 # Debian package dependencies for the host
 HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild"
 
 # Debian package dependencies for the chrooted environment
-GUEST_DEPENDENCIES="build-essential git m4 sudo python"
+GUEST_DEPENDENCIES="build-essential git m4 sudo python pep8 python-virtualenv python-pip"
 
 # Command used to run the tests
 TEST_COMMAND="make test"
@@ -65,6 +65,5 @@ fi
 
 echo "Running tests"
 echo "Environment: $(uname -a)"
-sudo apt-get --allow-unauthenticated install -qq -y python-virtualenv pep8
 
 ${TEST_COMMAND}
