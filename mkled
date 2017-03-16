@@ -1,0 +1,18 @@
+#!/bin/bash
+source leds.conf
+
+for f in $(seq -w 000 $numleds) ; do
+echo "black,1" > /led/led$f
+done
+
+for f in $(seq -w 050 079) ; do
+chown user1 /led/led$f
+done
+
+for f in $(seq -w 080 099) ; do
+chown user2 /led/led$f
+done
+
+for f in $(seq -w 100 119) ; do
+chown user3 /led/led$f
+done
