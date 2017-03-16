@@ -1,2 +1,4 @@
 *.swp
 env
+bollocks.egg-info
+build
