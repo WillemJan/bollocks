@@ -4,6 +4,9 @@ import os
 import sys
 
 import argparse
+import ConfigParser
+
+import StringIO
 
 from Adafruit_GPIO import SPI
 from Adafruit_WS2801 import WS2801Pixels
@@ -17,10 +20,8 @@ from pyinotify import WatchManager
 
 
 DEBUG = True
-PIXEL_COUNT = 32
 SPI_DEVICE = 0
 SPI_PORT = 0
-
 
 
 class EventHandler(ProcessEvent):
@@ -44,9 +45,11 @@ class EventHandler(ProcessEvent):
 
 class Bollocks(object):
     COLORMAP = {}
+    NUM_LEDS = 32
     led_map = {}
 
     def __init__(self):
+        self.NUM_LEDS = self.load_config().get('NUM_LEDS')
         self.COLORMAP = self.load_colormap()
 
     def run(self, path_to_leddir):
@@ -70,7 +73,7 @@ class Bollocks(object):
 
         try:
             self.pixels = WS2801Pixels(
-                    PIXEL_COUNT,
+                    self.NUM_LEDS,
                     spi=SPI.SpiDev(
                         SPI_PORT, SPI_DEVICE))
 
@@ -119,11 +122,36 @@ class Bollocks(object):
         self.pixels.show()
 
     @staticmethod
+    def load_config(config_file="bollocks.conf"):
+
+        config = ConfigParser.RawConfigParser()
+        msg = 'Unable to read or parse config file %s' % config_file
+
+        try:
+            raw_config = '[bollocks]\n'
+            with open(config_file, 'r') as fh:
+                raw_config += fh.read()
+        except:
+            sys.stderr.write(msg)
+            sys.exit(-1)
+
+        try:
+            config.readfp(StringIO.StringIO(raw_config))
+        except:
+            sys.stderr.write(msg)
+            sys.exit(-1)
+
+        numleds = config.getint('bollocks', 'numleds')
+
+        return dict({"NUM_LEDS": numleds})
+        
+
+
+    @staticmethod
     def load_colormap():
         dir_path = os.path.dirname(os.path.realpath(__file__))
         with open(os.path.join(dir_path, 'colormap.json'), 'r') as fh:
             return(load(fh))
-
 
 
 def main(path_to_leddir):
@@ -144,6 +172,10 @@ def test():
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Bollocks book leds rock!')
+    parser.add_argument('--config',
+                        default="bollocks.conf",
+                        type=str,
+                        help='Path to config file')
     parser.add_argument('--leds',
                         default=32,
                         type=int,
@@ -160,10 +192,14 @@ if __name__ == '__main__':
     if args.test:
         test()
     else:
-        if os.path.isdir(args.path):
-            main(args.path)
-        else:
-            msg = 'Bollocks: '
-            msg += 'Could not open SHM: %s' % args.path
-            sys.stderr.write(str(msg) + '\n')
+        msg = 'Bollocks: '
+        if not os.path.isdir(args.path):
+            msg += 'Could not open SHM path: %s \n' % args.path
+            sys.stderr.write(str(msg))
             sys.exit(-1)
+        if not os.path.isfile(args.config):
+            msg += 'Could not read config file: %s \n' % args.path
+            sys.stderr.write(str(msg))
+            sys.exit(-1)
+
+        main(args.path)
