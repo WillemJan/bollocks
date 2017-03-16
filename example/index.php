@@ -5,13 +5,13 @@ if( isset($_POST['mode']) )
 {
 $mode = $_POST["mode"];
 
-exec("sudo su - root -c \"echo $mode > /home/pi/naikbled/statusscripts/mode\"");
+exec("sudo su - root -c \"echo $mode > /home/pi/bollocks/statusscripts/mode\"");
 }
 if( isset($_POST['subnet']) )
 {
 $subnet = $_POST["subnet"];
 
-exec("sudo su - root -c \"echo $subnet > /home/pi/naikbled/statusscripts/subnet\"");
+exec("sudo su - root -c \"echo $subnet > /home/pi/bollocks/statusscripts/subnet\"");
 }
 ?>
 
@@ -24,8 +24,11 @@ exec("sudo su - root -c \"echo $subnet > /home/pi/naikbled/statusscripts/subnet\
   <option value="3">network</option>
   <option value="4">kit</option>
   <option value="5">fire</option>
-  <option value="6">kerst</option>
+  <option value="6">chrismas</option>
   <option value="7">clear</option>
+  <option value="8">bigdemo</option>
+  <option value="9">rainbow</option>
+  <option value="x">nothing</option>
 </select>
 
 <h2>Netwerk Segment</h2>
