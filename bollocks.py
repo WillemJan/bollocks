@@ -22,11 +22,6 @@ SPI_DEVICE = 0
 SPI_PORT = 0
 
 
-def load_colormap():
-    dir_path = os.path.dirname(os.path.realpath(__file__))
-    with open(os.path.join(dir_path, 'colormap.json'), 'r') as fh:
-        return(load(fh))
-
 
 class EventHandler(ProcessEvent):
     def __init__(self, set_color):
@@ -52,7 +47,7 @@ class Bollocks(object):
     led_map = {}
 
     def __init__(self):
-        self.COLORMAP = load_colormap()
+        self.COLORMAP = self.load_colormap()
 
     def run(self, path_to_leddir):
         for led in sorted(os.listdir(path_to_leddir)):
@@ -122,6 +117,13 @@ class Bollocks(object):
         self.pixels.set_pixel_rgb(lednr,
                                   r, g, b)
         self.pixels.show()
+
+    @staticmethod
+    def load_colormap():
+        dir_path = os.path.dirname(os.path.realpath(__file__))
+        with open(os.path.join(dir_path, 'colormap.json'), 'r') as fh:
+            return(load(fh))
+
 
 
 def main(path_to_leddir):
