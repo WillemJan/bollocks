@@ -1,0 +1,6 @@
+#!/bin/bash
+# set user led from remote machine using ssh=key
+# led1 [color] [dim]
+if [ ! $1 ] ; then kleur="black" ; else kleur=$1 ; fi
+if [ ! $2 ] ; then dim=100 ; else dim=$2 ; fi
+ssh haanstoot@pruts1.mgt.rad.lan "echo $kleur,$dim > /led/led040" >/dev/null 2>/dev/null
