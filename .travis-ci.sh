@@ -7,10 +7,10 @@ VERSION=stretch
 CHROOT_ARCH=armhf
 
 # Debian package dependencies for the host
-HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild"
+HOST_DEPENDENCIES="debootstrap qemu-user-static binfmt-support sbuild python2.7 pep8 python-virtualenv python-pip"
 
 # Debian package dependencies for the chrooted environment
-GUEST_DEPENDENCIES="build-essential git m4 sudo python pep8 python-virtualenv python-pip"
+GUEST_DEPENDENCIES="build-essential git m4 sudo python2.7 pep8 python-virtualenv python-pip"
 
 # Command used to run the tests
 TEST_COMMAND="make test"
@@ -24,6 +24,8 @@ function setup_arm_chroot {
     sudo debootstrap --foreign --no-check-gpg --include=fakeroot,build-essential \
         --arch=${CHROOT_ARCH} ${VERSION} ${CHROOT_DIR} ${MIRROR}
     sudo cp /usr/bin/qemu-arm-static ${CHROOT_DIR}/usr/bin/
+    sudo cp /usr/bin/virtualenv ${CHROOT_DIR}/usr/bin/
+    sudo cp /usr/bin/pep8 ${CHROOT_DIR}/usr/bin/
     sudo chroot ${CHROOT_DIR} ./debootstrap/debootstrap --second-stage
     sudo sbuild-createchroot --arch=${CHROOT_ARCH} --foreign --setup-only \
         ${VERSION} ${CHROOT_DIR} ${MIRROR}

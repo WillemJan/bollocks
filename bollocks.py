@@ -11,7 +11,7 @@ import StringIO
 from Adafruit_GPIO import SPI
 from Adafruit_WS2801 import WS2801Pixels
 
-from simplejson import load
+from json import load
 
 from pyinotify import IN_CLOSE_WRITE
 from pyinotify import Notifier

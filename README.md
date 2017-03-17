@@ -15,6 +15,7 @@ AUTHORS:
         http://www.kb.nl/
 
 DEPENDENCIES:
+    - python2.7
     - Adafruit's WS2801 library.
     - Adafruit's GPIO library.
     - python-pyinotify
