@@ -24,7 +24,6 @@ function setup_arm_chroot {
     sudo debootstrap --foreign --no-check-gpg --include=fakeroot,build-essential \
         --arch=${CHROOT_ARCH} ${VERSION} ${CHROOT_DIR} ${MIRROR}
     sudo cp /usr/bin/qemu-arm-static ${CHROOT_DIR}/usr/bin/
-    sudo cp /usr/bin/virtualenv ${CHROOT_DIR}/usr/bin/
     sudo cp /usr/bin/pep8 ${CHROOT_DIR}/usr/bin/
     sudo chroot ${CHROOT_DIR} ./debootstrap/debootstrap --second-stage
     sudo sbuild-createchroot --arch=${CHROOT_ARCH} --foreign --setup-only \
@@ -47,6 +46,7 @@ function setup_arm_chroot {
 
     # Indicate chroot environment has been set up
     sudo touch ${CHROOT_DIR}/.chroot_is_done
+    sudo chmod +x ./.travis-ci.sh
 
     # Call ourselves again which will cause tests to run
     sudo chroot ${CHROOT_DIR} bash -c "cd ${TRAVIS_BUILD_DIR} && ./.travis-ci.sh"
