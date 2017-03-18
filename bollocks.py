@@ -107,7 +107,18 @@ class Bollocks(object):
         notifier.loop()
 
     def set_color(self, lednr, colorname1, dim1, *kwargs):
-        color1 = self.COLORMAP.get(colorname1).get('rgb')
+        if not colorname1.startswith('#') or not colorname1.startswith('0x'):
+            color1 = self.COLORMAP.get(colorname1).get('rgb')
+        elif colorname1.startswith('#') or colorname1.startswith('0x'):
+            colorname1 = colorname1.replace('#','')
+            colorname1 = colorname1.replace('0x','')
+            color1 = []
+            color1[0] = int(colorname1[0:2], 16)
+            color1[1] = int(colorname1[2:4], 16)
+            color1[2] = int(colorname1[4:6], 16)
+
+        if color1 is None:
+            color1 = [0,0,0] # Default to off 
 
         if color1:
             r = int(round((float(color1[0]) / 100.0) * dim1))
