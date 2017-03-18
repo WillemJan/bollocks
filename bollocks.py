@@ -106,28 +106,29 @@ class Bollocks(object):
 
         notifier.loop()
 
-    def set_color(self, lednr, colorname1, dim1, *kwargs):
-        if not colorname1.startswith('#') or not colorname1.startswith('0x'):
-            color1 = self.COLORMAP.get(colorname1).get('rgb')
-        elif colorname1.startswith('#') or colorname1.startswith('0x'):
-            colorname1 = colorname1.replace('#','')
-            colorname1 = colorname1.replace('0x','')
-            color1 = []
-            color1[0] = int(colorname1[0:2], 16)
-            color1[1] = int(colorname1[2:4], 16)
-            color1[2] = int(colorname1[4:6], 16)
-
-        if color1 is None:
-            color1 = [0,0,0] # Default to off 
-
-        if color1:
-            r = int(round((float(color1[0]) / 100.0) * dim1))
-            g = int(round((float(color1[2]) / 100.0) * dim1))
-            b = int(round((float(color1[1]) / 100.0) * dim1))
+    def color_to_rgb(self, lednr, colorname, dim):
+        if colorname.startswith('#') or colorname.startswith('0x'):
+            colorname = colorname.replace('#','')
+            colorname = colorname.replace('0x','')
+            color = []
+            color.append(int(colorname[0:2], 16))
+            color.append(int(colorname[2:4], 16))
+            color.append(int(colorname[4:6], 16))
         else:
-            msg = 'Invalid colorname: "%s" for led: %i' % (colorname1, lednr)
-            print(msg)
-            return
+            color = self.COLORMAP.get(colorname).get('rgb')
+            color = list(int(i) for i in color.split(','))
+            if color is None:
+                msg = "led: %s: Failed to convert: %s,%s to rgb values." % (
+                        lednr, colorname, dim)
+                color = [0,0,0] # Default to off 
+
+        r = int(round((float(color[0]) / 100.0) * dim))
+        g = int(round((float(color[2]) / 100.0) * dim))
+        b = int(round((float(color[1]) / 100.0) * dim))
+        return (r, g, b)
+
+    def set_color(self, lednr, colorname1, dim1, *kwargs):
+        r, g, b = self.color_to_rgb(lednr, colorname1, dim1)
         if DEBUG:
             print('Setting led: %i to %s (%i, %i, %i)' % (
                 lednr, colorname1, r, g, b))
@@ -181,8 +182,12 @@ def test():
     """
     >>> path_to_leddir = '/led/'
     >>> bollocks = Bollocks()
-    >>> print(bollocks.COLORMAP.get('cyan2'))
-    {'rgb': '0,238,238', 'hex': '#00eeee'}
+    >>> print(bollocks.COLORMAP.get('red'))
+    {u'rgb': u'255,0,0', u'hex': u'#ff0000'}
+    >>> print(bollocks.color_to_rgb(0, 'red', 100))
+    (255, 0, 0)
+    >>> print(bollocks.color_to_rgb(0, '#ff0000', 100))
+    (255, 0, 0)
     >>> print(bollocks.SPI_DEVICE)
     0
     >>> print(bollocks.SPI_PORT)
