@@ -108,8 +108,8 @@ class Bollocks(object):
 
     def color_to_rgb(self, lednr, colorname, dim):
         if colorname.startswith('#') or colorname.startswith('0x'):
-            colorname = colorname.replace('#','')
-            colorname = colorname.replace('0x','')
+            colorname = colorname.replace('#', '')
+            colorname = colorname.replace('0x', '')
             color = []
             color.append(int(colorname[0:2], 16))
             color.append(int(colorname[2:4], 16))
@@ -118,9 +118,10 @@ class Bollocks(object):
             color = self.COLORMAP.get(colorname).get('rgb')
             color = list(int(i) for i in color.split(','))
             if color is None:
-                msg = "led: %s: Failed to convert: %s,%s to rgb values." % (
+                msg = "led: %s: Failed to convert: %s,%s to rgb values.\n" % (
                         lednr, colorname, dim)
-                color = [0,0,0] # Default to off 
+                sys.stderr.write(msg)
+                color = [0, 0, 0]  # Default to off
 
         r = int(round((float(color[0]) / 100.0) * dim))
         g = int(round((float(color[2]) / 100.0) * dim))
