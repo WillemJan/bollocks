@@ -186,6 +186,12 @@ def test():
     {u'rgb': u'255,0,0', u'hex': u'#ff0000'}
     >>> print(bollocks.color_to_rgb(0, 'red', 100))
     (255, 0, 0)
+    >>> print(bollocks.color_to_rgb(0, 'blue', 100))
+    (0, 255, 0)
+    >>> print(bollocks.color_to_rgb(0, 'green', 100))
+    (0, 0, 255)
+    >>> print(bollocks.color_to_rgb(0, 'red3', 100))
+    (205, 0, 0)
     >>> print(bollocks.color_to_rgb(0, '#ff0000', 100))
     (255, 0, 0)
     >>> print(bollocks.SPI_DEVICE)
@@ -196,7 +202,7 @@ def test():
     159
     """
     import doctest
-    doctest.testmod(verbose=True)
+    doctest.testmod(verbose=False)
 
 
 if __name__ == '__main__':
