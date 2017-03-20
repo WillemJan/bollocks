@@ -39,3 +39,9 @@ exec("sudo su - root -c \"echo $subnet > /home/pi/bollocks/statusscripts/subnet\
 <P>
   <input type="submit">
 </form>
+  <pre>
+<?PHP
+system("find /led -not -user root -exec ls -latr {} \; | awk '{ print $9\" \"$3 }' | sort  -n ");
+?>
+</pre>
+
