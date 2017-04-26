@@ -21,7 +21,7 @@ from pyinotify import WatchManager
 
 DEBUG = True
 
-class Looper(threading.Thread):
+class Fader(threading.Thread):
     def __init__(self, pixels, led_map, color_to_rgb):
         threading.Thread.__init__(self, group=None, target=None, name=None, verbose=None)
         self.pixels = pixels
@@ -38,8 +38,35 @@ class Looper(threading.Thread):
                 old_map = self.led_map.get(lednr)[0]
                 self.led_map[lednr][0] = self.led_map[lednr][1]
                 self.led_map[lednr][1] = old_map
-            time.sleep(1)
-            
+
+            time.sleep(0.001)
+
+class Blinker(threading.Thread):
+    def __init__(self, pixels, led_map, color_to_rgb):
+        threading.Thread.__init__(self, group=None, target=None, name=None, verbose=None)
+        self.pixels = pixels
+        self.led_map = led_map
+        self.color_to_rgb = color_to_rgb
+
+    def run(self):
+        while True:
+            for lednr in self.led_map.keys():
+                r1, g1, b1 = self.led_map.get(lednr)[0]
+                if len(self.led_map.get(lednr)) == 3:
+                    self.pixels.set_pixel_rgb(lednr,
+                                              r1, g1, b1)
+                    self.pixels.show()
+                    self.led_map[lednr].append(0)
+                else:
+                    self.led_map[lednr][-1] += 1
+                    if self.led_map[lednr][-1]*0.001 >= self.led_map[lednr][2]:
+                        old_map = self.led_map.get(lednr)[0]
+                        self.led_map[lednr][0] = self.led_map[lednr][1]
+                        self.led_map[lednr][1] = old_map
+                        self.led_map[lednr] = self.led_map[lednr][:-1]
+
+            time.sleep(0.001)
+             
 class EventHandler(ProcessEvent):
     def __init__(self, set_color):
         ProcessEvent.__init__(self)
@@ -105,8 +132,6 @@ class Bollocks(object):
     SPI_DEVICE = 0
     SPI_PORT = 0
 
-    led_map = {}
-
     def __init__(self):
         self.COLORMAP = self.load_colormap()
         config = self.load_config()
@@ -135,8 +160,12 @@ class Bollocks(object):
 
         msg = 'Bollocks: '
         msg += 'Starting bollocks v1'
-        self.looper = Looper(self.pixels, self.led_map, self.color_to_rgb)
-        self.looper.start()
+
+        self.blinker = Blinker(self.pixels, {}, self.color_to_rgb)
+        self.blinker.start()
+
+        self.fader = Fader(self.pixels, {}, self.color_to_rgb)
+        self.fader.start()
 
         self.watch_dir()
 
@@ -186,11 +215,23 @@ class Bollocks(object):
                                       r1, g1, b1)
             self.pixels.show()
 
-            if lednr in self.looper.led_map:
-                self.looper.led_map.pop(lednr)
-        else:
-            self.looper.led_map[lednr] = [
+            if lednr in self.blinker.led_map:
+                self.blinker.led_map.pop(lednr)
+            if lednr in self.fader.led_map:
+                self.fader.led_map.pop(lednr)
+
+        elif mode == 'blink':
+            print('mode = blink')
+            self.blinker.led_map[lednr] = [
                     [r1, g1, b1], [r2, g2, b2], timer]
+            if lednr in self.fader.led_map:
+                self.fader.led_map.pop(lednr)
+        elif mode == 'fader':
+            print('mode = fader')
+            self.fader.led_map[lednr] = [
+                    [r1, g1, b1], [r2, g2, b2], timer]
+            if lednr in self.blinker.led_map:
+                self.blinker.led_map.pop(lednr)
 
     @staticmethod
     def load_config(config_file="bollocks.conf"):
