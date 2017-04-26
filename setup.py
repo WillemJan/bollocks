@@ -20,7 +20,7 @@ required = ['adafruit-gpio',
             '']
 setup(
     name='bollocks',
-    version=1,
+    version='1.0',
     description='Controll multicolor leds strips from SHM ',
     email='Willem Jan Faber <aloha@pruts.nl> Henri Aanstoot <fash@pruts.nl>',
     author='Henri Aanstoot, Willem Jan Faber',

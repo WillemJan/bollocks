@@ -2,11 +2,12 @@
 
 import os
 import sys
+import time
 
 import argparse
 import ConfigParser
-
 import StringIO
+import threading
 
 from Adafruit_GPIO import SPI
 from Adafruit_WS2801 import WS2801Pixels
@@ -18,27 +19,84 @@ from pyinotify import Notifier
 from pyinotify import ProcessEvent
 from pyinotify import WatchManager
 
-
 DEBUG = True
 
+class Looper(threading.Thread):
+    def __init__(self, pixels, led_map, color_to_rgb):
+        threading.Thread.__init__(self, group=None, target=None, name=None, verbose=None)
+        self.pixels = pixels
+        self.led_map = led_map
+        self.color_to_rgb = color_to_rgb
 
+    def run(self):
+        while True:
+            for lednr in self.led_map.keys():
+                r1, g1, b1 = self.led_map.get(lednr)[0]
+                self.pixels.set_pixel_rgb(lednr,
+                                          r1, g1, b1)
+                self.pixels.show()
+                old_map = self.led_map.get(lednr)[0]
+                self.led_map[lednr][0] = self.led_map[lednr][1]
+                self.led_map[lednr][1] = old_map
+            time.sleep(1)
+            
 class EventHandler(ProcessEvent):
     def __init__(self, set_color):
         ProcessEvent.__init__(self)
         self.set_color = set_color
 
     def process_IN_CLOSE_WRITE(self, event):
-        lednr = int(event.pathname.split(os.sep)[-1][3:])
+        try:
+            lednr = int(event.pathname.split(os.sep)[-1][3:])
+            with open(event.pathname) as fh:
+                line = fh.readline().strip()
+        except:
+            return
 
-        with open(event.pathname) as fh:
-            line = fh.readline().strip()
+        if line.find(',') > -1 and len(line.split(',')) == 6:
+            colorname1 = line.split(',')[0]
 
-        colorname1 = line.split(',')[0]
-        dim1 = float(line.split(',')[1])
+            try:
+                dim1 = float(line.split(',')[1])
+            except:
+                msg = 'Bollocks: '
+                msg += 'Unable to parse led%i\n' % lednr
+                sys.stderr.write(msg)
+                dim1 = 100
 
-        self.set_color(lednr,
-                       colorname1,
-                       dim1)
+            colorname2 = line.split(',')[2]
+
+            try:
+                dim2 = float(line.split(',')[3])
+            except:
+                msg = 'Bollocks: '
+                msg += 'Unable to parse led%i\n' % lednr
+                sys.stderr.write(msg)
+                dim2 = 100
+
+        
+            mode = line.split(',')[4]
+            if not mode in ["normal", "fade", "blink"]:
+                mode = "normal"
+
+            try:
+                timer = float(line.split(',')[5])
+            except:
+                msg = 'Bollocks: '
+                msg += 'Unable to parse led%i\n' % lednr
+                sys.stderr.write(msg)
+                timer = 1
+
+            try:
+                self.set_color(lednr,
+                               colorname1,
+                               dim1,
+                               colorname2,
+                               dim2,
+                               mode,
+                               timer)
+            except Exception as error:
+                print(error)
 
 
 class Bollocks(object):
@@ -57,22 +115,6 @@ class Bollocks(object):
         self.SPI_PORT = config.get('SPI_PORT')
 
     def run(self, path_to_leddir):
-        for led in sorted(os.listdir(path_to_leddir)):
-            with open(path_to_leddir + os.sep + led) as fh:
-                line = fh.readline().strip()
-                step = False
-
-                if line.count(',') > 1:
-                    step = 0
-
-                self.led_map[led] = {
-                    'wanted': [fh.readline().strip()],
-                    'r': 0,  # current r
-                    'g': 0,  # current g
-                    'b': 0,  # current b
-                    'step': step,  # current step
-                }
-
         self.path_to_leddir = path_to_leddir
 
         try:
@@ -93,6 +135,9 @@ class Bollocks(object):
 
         msg = 'Bollocks: '
         msg += 'Starting bollocks v1'
+        self.looper = Looper(self.pixels, self.led_map, self.color_to_rgb)
+        self.looper.start()
+
         self.watch_dir()
 
     def watch_dir(self):
@@ -128,15 +173,24 @@ class Bollocks(object):
         b = int(round((float(color[1]) / 100.0) * dim))
         return (r, g, b)
 
-    def set_color(self, lednr, colorname1, dim1, *kwargs):
-        r, g, b = self.color_to_rgb(lednr, colorname1, dim1)
+    def set_color(self, lednr, colorname1, dim1, colorname2, dim2, mode, timer):
+        r1, g1, b1 = self.color_to_rgb(lednr, colorname1, dim1)
+        r2, g2, b2 = self.color_to_rgb(lednr, colorname2, dim2)
+
         if DEBUG:
             print('Setting led: %i to %s (%i, %i, %i)' % (
-                lednr, colorname1, r, g, b))
+                lednr, colorname1, r1, g1, b1))
 
-        self.pixels.set_pixel_rgb(lednr,
-                                  r, g, b)
-        self.pixels.show()
+        if mode == 'normal':
+            self.pixels.set_pixel_rgb(lednr,
+                                      r1, g1, b1)
+            self.pixels.show()
+
+            if lednr in self.looper.led_map:
+                self.looper.led_map.pop(lednr)
+        else:
+            self.looper.led_map[lednr] = [
+                    [r1, g1, b1], [r2, g2, b2], timer]
 
     @staticmethod
     def load_config(config_file="bollocks.conf"):
