@@ -20,6 +20,7 @@ from pyinotify import ProcessEvent
 from pyinotify import WatchManager
 
 DEBUG = True
+lock = threading.Lock()
 
 class Fader(threading.Thread):
     def __init__(self, pixels, led_map, color_to_rgb):
@@ -51,21 +52,24 @@ class Blinker(threading.Thread):
     def run(self):
         while True:
             for lednr in self.led_map.keys():
+                #print("BLINK", lednr)
                 r1, g1, b1 = self.led_map.get(lednr)[0]
                 if len(self.led_map.get(lednr)) == 3:
                     self.pixels.set_pixel_rgb(lednr,
                                               r1, g1, b1)
                     self.pixels.show()
-                    self.led_map[lednr].append(0)
+                    with lock:
+                        self.led_map[lednr].append(0)
                 else:
-                    self.led_map[lednr][-1] += 1
-                    if self.led_map[lednr][-1]*0.001 >= self.led_map[lednr][2]:
-                        old_map = self.led_map.get(lednr)[0]
-                        self.led_map[lednr][0] = self.led_map[lednr][1]
-                        self.led_map[lednr][1] = old_map
-                        self.led_map[lednr] = self.led_map[lednr][:-1]
+                    with lock:
+                        self.led_map[lednr][-1] += 1
+                        if self.led_map[lednr][-1]*0.01 >= self.led_map[lednr][2]:
+                            old_map = self.led_map.get(lednr)[0]
+                            self.led_map[lednr][0] = self.led_map[lednr][1]
+                            self.led_map[lednr][1] = old_map
+                            self.led_map[lednr] = self.led_map[lednr][:-1]
 
-            time.sleep(0.001)
+            time.sleep(0.01)
              
 class EventHandler(ProcessEvent):
     def __init__(self, set_color):
@@ -216,22 +220,28 @@ class Bollocks(object):
             self.pixels.show()
 
             if lednr in self.blinker.led_map:
-                self.blinker.led_map.pop(lednr)
+                with lock:
+                    self.blinker.led_map.pop(lednr)
             if lednr in self.fader.led_map:
-                self.fader.led_map.pop(lednr)
+                with lock:
+                    self.fader.led_map.pop(lednr)
 
         elif mode == 'blink':
             print('mode = blink')
-            self.blinker.led_map[lednr] = [
-                    [r1, g1, b1], [r2, g2, b2], timer]
+            with lock:
+                self.blinker.led_map[lednr] = [
+                        [r1, g1, b1], [r2, g2, b2], timer]
             if lednr in self.fader.led_map:
-                self.fader.led_map.pop(lednr)
+                with lock:
+                    self.fader.led_map.pop(lednr)
         elif mode == 'fader':
             print('mode = fader')
-            self.fader.led_map[lednr] = [
-                    [r1, g1, b1], [r2, g2, b2], timer]
+            with lock:
+                self.fader.led_map[lednr] = [
+                        [r1, g1, b1], [r2, g2, b2], timer]
             if lednr in self.blinker.led_map:
-                self.blinker.led_map.pop(lednr)
+                with lock:
+                    self.blinker.led_map.pop(lednr)
 
     @staticmethod
     def load_config(config_file="bollocks.conf"):
