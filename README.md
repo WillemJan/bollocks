@@ -9,14 +9,12 @@ AUTHORS:
     Henri Aanstoot (http://github.com/fashice/)
     Willem Jan Faber (http://github.com/willemjan/)
 
-    Tnx fly out to our current employers:
-        
-        http://www.nationaalarchief.nl/
-        http://www.kb.nl/
-
 DEPENDENCIES:
     - python2.7
     - Adafruit's WS2801 library.
     - Adafruit's GPIO library.
     - python-pyinotify
     - json
+
+    For ZMQ-branch:
+        - zmq
