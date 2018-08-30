@@ -1,8 +1,3 @@
-[![Build Status](https://travis-ci.org/WillemJan/bollocks.svg?branch=master)](https://travis-ci.org/WillemJan/bollocks)
-
-TODO:
-
-    Write what this does.<insert koffie & gezelligheid here>
 
 AUTHORS:
     
@@ -15,6 +10,4 @@ DEPENDENCIES:
     - Adafruit's GPIO library.
     - python-pyinotify
     - json
-
-    For ZMQ-branch:
-        - zmq
+    - zmq
