@@ -1,12 +1,19 @@
-#!/usr/bin/env python2.7
+#!/usr/bin/env python3.5
 
 import os
 import sys
 import time
+import zmq
+import pprint
+
+from pprint import pprint
 
 import argparse
-import ConfigParser
-import StringIO
+import configparser
+try:
+    from StringIO import StringIO
+except ImportError:
+    from io import StringIO
 import threading
 
 from Adafruit_GPIO import SPI
@@ -22,9 +29,34 @@ from pyinotify import WatchManager
 DEBUG = True
 lock = threading.Lock()
 
+class Zmq(threading.Thread):
+    def __init__(self, led_controll):
+        threading.Thread.__init__(self)
+        self.led_controll = led_controll
+        self.context = zmq.Context()
+        self.results_receiver = self.context.socket(zmq.PULL)
+        self.results_receiver.bind("tcp://*:4455")
+
+    def run(self):
+        while True:
+                result = self.results_receiver.recv_json()
+                for lednr in result:
+                    val = result[lednr]
+                    try:
+                        self.led_controll.set_color(lednr, val[0], val[1], val[2], val[3], val[4], val[5], False)
+                    except:
+                        pass
+                result = {}
+                try:
+                    self.led_controll.set_color(lednr, val[0], val[1], val[2], val[3], val[4], val[5], True)
+                except:
+                    pass
+                time.sleep(0.001)
+
+
 class Fader(threading.Thread):
     def __init__(self, pixels, led_map, color_to_rgb):
-        threading.Thread.__init__(self, group=None, target=None, name=None, verbose=None)
+        threading.Thread.__init__(self)
         self.pixels = pixels
         self.led_map = led_map
         self.color_to_rgb = color_to_rgb
@@ -44,30 +76,34 @@ class Fader(threading.Thread):
 
 class Blinker(threading.Thread):
     def __init__(self, pixels, led_map, color_to_rgb):
-        threading.Thread.__init__(self, group=None, target=None, name=None, verbose=None)
+        threading.Thread.__init__(self)
         self.pixels = pixels
         self.led_map = led_map
         self.color_to_rgb = color_to_rgb
 
     def run(self):
         while True:
-            for lednr in self.led_map.keys():
+            led_map = self.led_map.copy()
+            for lednr in led_map.keys():
                 #print("BLINK", lednr)
-                r1, g1, b1 = self.led_map.get(lednr)[0]
-                if len(self.led_map.get(lednr)) == 3:
-                    self.pixels.set_pixel_rgb(lednr,
-                                              r1, g1, b1)
-                    self.pixels.show()
-                    with lock:
-                        self.led_map[lednr].append(0)
-                else:
-                    with lock:
-                        self.led_map[lednr][-1] += 1
-                        if self.led_map[lednr][-1]*0.01 >= self.led_map[lednr][2]:
-                            old_map = self.led_map.get(lednr)[0]
-                            self.led_map[lednr][0] = self.led_map[lednr][1]
-                            self.led_map[lednr][1] = old_map
-                            self.led_map[lednr] = self.led_map[lednr][:-1]
+                try:
+                    r1, g1, b1 = self.led_map.get(lednr)[0]
+                    if len(self.led_map.get(lednr)) == 3:
+                        self.pixels.set_pixel_rgb(lednr,
+                                                  r1, g1, b1)
+                        self.pixels.show()
+                        with lock:
+                            self.led_map[lednr].append(0)
+                    else:
+                        with lock:
+                            self.led_map[lednr][-1] += 1
+                            if self.led_map[lednr][-1]*0.01 >= self.led_map[lednr][2]:
+                                old_map = self.led_map.get(lednr)[0]
+                                self.led_map[lednr][0] = self.led_map[lednr][1]
+                                self.led_map[lednr][1] = old_map
+                                self.led_map[lednr] = self.led_map[lednr][:-1]
+                except:
+                    pass
 
             time.sleep(0.01)
              
@@ -171,6 +207,10 @@ class Bollocks(object):
         self.fader = Fader(self.pixels, {}, self.color_to_rgb)
         self.fader.start()
 
+        self.zmq_handler = Zmq(self)
+        self.zmq_handler.daemon = True
+        self.zmq_handler.start()
+
         self.watch_dir()
 
     def watch_dir(self):
@@ -185,16 +225,23 @@ class Bollocks(object):
         notifier.loop()
 
     def color_to_rgb(self, lednr, colorname, dim):
+        dim = float(dim)
         if colorname.startswith('#') or colorname.startswith('0x'):
             colorname = colorname.replace('#', '')
             colorname = colorname.replace('0x', '')
             color = []
-            color.append(int(colorname[0:2], 16))
-            color.append(int(colorname[2:4], 16))
-            color.append(int(colorname[4:6], 16))
+            try:
+                color.append(int(colorname[0:2], 16))
+                color.append(int(colorname[2:4], 16))
+                color.append(int(colorname[4:6], 16))
+            except:
+                return (0,0,0)
         else:
-            color = self.COLORMAP.get(colorname).get('rgb')
-            color = list(int(i) for i in color.split(','))
+            try:
+                color = self.COLORMAP.get(colorname).get('rgb')
+                color = list(int(i) for i in color.split(','))
+            except:
+                color = None
             if color is None:
                 msg = "led: %s: Failed to convert: %s,%s to rgb values.\n" % (
                         lednr, colorname, dim)
@@ -206,18 +253,25 @@ class Bollocks(object):
         b = int(round((float(color[1]) / 100.0) * dim))
         return (r, g, b)
 
-    def set_color(self, lednr, colorname1, dim1, colorname2, dim2, mode, timer):
+    def set_color(self, lednr, colorname1, dim1, colorname2, dim2, mode, timer, update=True):
         r1, g1, b1 = self.color_to_rgb(lednr, colorname1, dim1)
         r2, g2, b2 = self.color_to_rgb(lednr, colorname2, dim2)
 
         if DEBUG:
-            print('Setting led: %i to %s (%i, %i, %i)' % (
-                lednr, colorname1, r1, g1, b1))
+            #print('Setting led: %i to %s (%i, %i, %i)' % (
+            #    lednr, colorname1, r1, g1, b1))
+            pass
+
+        lednr = int(lednr)
+
+        if lednr > self.NUM_LEDS:
+            return
 
         if mode == 'normal':
             self.pixels.set_pixel_rgb(lednr,
                                       r1, g1, b1)
-            self.pixels.show()
+            if update:
+                self.pixels.show()
 
             if lednr in self.blinker.led_map:
                 with lock:
@@ -227,7 +281,6 @@ class Bollocks(object):
                     self.fader.led_map.pop(lednr)
 
         elif mode == 'blink':
-            print('mode = blink')
             with lock:
                 self.blinker.led_map[lednr] = [
                         [r1, g1, b1], [r2, g2, b2], timer]
@@ -246,22 +299,22 @@ class Bollocks(object):
     @staticmethod
     def load_config(config_file="bollocks.conf"):
 
-        config = ConfigParser.RawConfigParser()
+        config = configparser.RawConfigParser()
         msg = 'Unable to read or parse config file %s' % config_file
 
-        try:
-            raw_config = '[bollocks]\n'
-            with open(config_file, 'r') as fh:
-                raw_config += fh.read()
-        except:
-            sys.stderr.write(msg)
-            sys.exit(-1)
+        #try:
+        raw_config = '[bollocks]\n'
+        with open(config_file, 'r') as fh:
+            raw_config += fh.read()
+        #except:
+        #    sys.stderr.write(msg)
+        #    sys.exit(-1)
 
-        try:
-            config.readfp(StringIO.StringIO(raw_config))
-        except:
-            sys.stderr.write(msg)
-            sys.exit(-1)
+        #try:
+        config.readfp(StringIO(raw_config))
+        #except:
+        #    sys.stderr.write(msg)
+        #    sys.exit(-1)
 
         numleds = config.getint('bollocks', 'numleds')
         spidevice = config.getint('bollocks', 'spidevice')
